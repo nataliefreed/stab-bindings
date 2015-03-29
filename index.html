@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Stab Bindings Designer</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
+
+	<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+	<!--[if lt IE 9]>
+	<script src="js/html5shiv.js"></script>
+	<![endif]-->
+
+	<!-- Fav and touch icons -->
+	<!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/apple-touch-icon-144-precomposed.png">-->
+	<!--<link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/apple-touch-icon-114-precomposed.png">-->
+	<!--<link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/apple-touch-icon-72-precomposed.png">-->
+	<!--<link rel="apple-touch-icon-precomposed" href="img/apple-touch-icon-57-precomposed.png">-->
+	<link rel="shortcut icon" href="assets/favicon.png">
+
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/scripts.js"></script>
+
+	<!-- Load the Paper.js library -->
+	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/paper.js/0.9.18/paper-full.min.js"></script>
+
+
+	<style type="text/css">
+		body {
+			background-color: #4B77BE;
+		}
+	</style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row clearfix">
+		<div class="col-md-12 column">
+			<h1>
+				Stab Bindings Designer
+			</h1>
+			<dl>
+				<dd>
+					Design your own, explore the math, view the steps, export a template...
+				</dd>
+			</dl>
+		</div>
+	</div>
+
+	<div class="row top-space">
+        <div class="col-md-8 column">
+            <canvas id="bookCanvas" width="600" height="400"></canvas>
+        </div>
+
+        <div class="col-md-4 column">
+            <button type="button" class="btn btn-default btn-lg" onclick="exportPNG()">Export Template</button>
+	    </div>
+    </div>
+</div>
+
+<script>
+	var paperscript = {}; //hold functions and variables defined inside the paperscript code
+
+	var xPos = 34;
+
+	function downloadDataUri(options) { //has to do with downloading exported image
+		if (!options.url)
+			options.url = "http://download-data-uri.appspot.com/";
+		$('<form method="post" action="' + options.url
+		+ '" style="display:none"><input type="hidden" name="filename" value="'
+		+ options.filename + '"/><input type="hidden" name="data" value="'
+		+ options.data + '"/></form>').appendTo('body').submit().remove();
+	}
+
+	function downloadSVG() {
+		var svg = paperscript.project.exportSVG({asString: true});
+		downloadDataUri({
+			data: 'data:image/svg+xml;base64,' + btoa(svg),
+			filename: 'export.svg'
+		});
+	};
+
+	function downloadBitmap() {
+        paperscript.hideAllExceptDollAndOutfit();
+        var png = document.getElementById("bookCanvas").toDataURL("image/png");
+        paperscript.showItAgain();
+        window.open().location = png;
+    }
+</script>
+
+
+
+<script type="text/paperscript" canvas="bookCanvas">
+
+    var background = new Path.Rectangle(view.bounds);
+    background.fillColor = '#9EBBE8';
+    background.strokeColor = 'black';
+
+    var bookWidth = 500;
+    var bookHeight = 200;
+    //draw book centered in view
+    var book = new Path.Rectangle({
+        center: view.center,
+        size: [bookWidth, bookHeight],
+        fillColor: 'white',
+        strokeColor: new Color(0.5),
+        shadowColor: new Color(0.4),
+        shadowBlur: 12,
+        shadowOffset: new Point(5, 5)
+    });
+
+    var threads = new Path();
+    threads.strokeWeight = 3;
+    threads.strokeColor = 'red';
+    threads.selected = true;
+
+    var selectedPoint;
+
+    book.onClick = function(event) {
+        threads.add(event.point);
+        threads.add(event.point);
+    }
+
+    threads.onClick = function(event) {
+        threads.add(event.point);
+        console.log("clicked");
+    }
+
+    /*background.onClick = function(event) {
+        threads.add(threads.las);
+        console.log("clicked");
+    }*/
+
+    book.onMouseMove = function(event) {
+        threads.lastSegment.point = event.point;
+        paper.view.draw();
+        //console.log(event.point);
+    }
+
+	paper.view.draw();
+
+	paper.install(window.paperscript); //make the functions accessible via javascript
+
+
+</script>
+
+</body>
+</html>
